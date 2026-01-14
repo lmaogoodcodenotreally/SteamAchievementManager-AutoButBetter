@@ -4,3 +4,9 @@ C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.AP
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.API.csproj.CoreCompileInputs.cache
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.API.dll
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.API.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\bin\Debug\SAM.API.dll
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\bin\Debug\SAM.API.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.API.csproj.AssemblyReference.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.API.csproj.CoreCompileInputs.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.API.dll
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Debug\SAM.API.pdb

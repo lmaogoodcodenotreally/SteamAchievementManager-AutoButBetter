@@ -2,3 +2,15 @@ C:\Users\User\source\repos\SteamAchievementManager-Auto\upload\SAM.API.dll
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Release\SAM.API.csproj.AssemblyReference.cache
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Release\SAM.API.csproj.CoreCompileInputs.cache
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Release\SAM.API.dll
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\upload\SAM.API.dll
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Release\SAM.API.csproj.AssemblyReference.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Release\SAM.API.csproj.CoreCompileInputs.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.API\obj\Release\SAM.API.dll
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\upload\SAM.API.dll
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.API\obj\Release\SAM.API.csproj.AssemblyReference.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.API\obj\Release\SAM.API.csproj.CoreCompileInputs.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.API\obj\Release\SAM.API.dll
+C:\Users\User\source\repos\SteamAchievementManager-Auto-1.0.3\upload\SAM.API.dll
+C:\Users\User\source\repos\SteamAchievementManager-Auto-1.0.3\SAM.API\obj\Release\SAM.API.csproj.AssemblyReference.cache
+C:\Users\User\source\repos\SteamAchievementManager-Auto-1.0.3\SAM.API\obj\Release\SAM.API.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\SteamAchievementManager-Auto-1.0.3\SAM.API\obj\Release\SAM.API.dll
