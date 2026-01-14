@@ -9,3 +9,25 @@ C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.csproj.Up2Date
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.exe
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\bin\SAM.Picker.exe.config
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\bin\SAM.Picker.exe
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\bin\SAM.Picker.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.csproj.AssemblyReference.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.GamePicker.resources
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.Properties.Resources.resources
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.csproj.GenerateResource.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.csproj.CoreCompileInputs.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.csproj.Up2Date
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.exe
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Picker\obj\Debug\SAM.Picker.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.csproj.AssemblyReference.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.GamePicker.resources
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.Properties.Resources.resources
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.csproj.GenerateResource.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.csproj.CoreCompileInputs.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.exe
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\bin\SAM.Picker.exe.config
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\bin\SAM.Picker.exe
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\bin\SAM.Picker.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto - 1.0.3\SAM.Picker\obj\Debug\SAM.Picker.csproj.Up2Date

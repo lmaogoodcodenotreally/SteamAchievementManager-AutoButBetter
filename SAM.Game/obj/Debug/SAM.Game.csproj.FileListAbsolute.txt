@@ -9,3 +9,14 @@ C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.G
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.csproj.Up2Date
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.exe
 C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\bin\SAM.Game.exe.config
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\bin\SAM.Game.exe
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\bin\SAM.Game.pdb
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.csproj.AssemblyReference.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.Manager.resources
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.Properties.Resources.resources
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.csproj.GenerateResource.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.csproj.CoreCompileInputs.cache
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.csproj.Up2Date
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.exe
+D:\_BACKUP_USER\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Debug\SAM.Game.pdb

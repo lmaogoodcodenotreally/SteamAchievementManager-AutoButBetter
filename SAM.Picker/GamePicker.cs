@@ -1,26 +1,4 @@
-﻿/* Copyright (c) 2017 Rick (rick 'at' gibbed 'dot' us)
- * 
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- * 
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- * 
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would
- *    be appreciated but is not required.
- * 
- * 2. Altered source versions must be plainly marked as such, and must not
- *    be misrepresented as being the original software.
- * 
- * 3. This notice may not be removed or altered from any source
- *    distribution.
- */
-
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,20 +8,95 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.XPath;
 using APITypes = SAM.API.Types;
+using Microsoft.Win32;
+using System.Text.RegularExpressions;
 
 
 namespace SAM.Picker
 {
     internal partial class GamePicker : Form
     {
-        private readonly API.Client _SteamClient;
+        // Method to get the Steam installation path
+        private string GetSteamInstallPath()
+        {
+            return (string)Registry.GetValue(@"HKEY_CURRENT_USER\SOFTWARE\Valve\Steam", "SteamPath", null);
+        }
 
+        // Method to get the current Steam ID
+        private string GetCurrentSteamId()
+        {
+            string installPath = GetSteamInstallPath();
+            if (installPath == null)
+            {
+                Console.WriteLine("Could not find the Steam installation path.");
+                return null;
+            }
+
+            string filePath = Path.Combine(installPath, "config", "loginusers.vdf");
+            Console.WriteLine($"Attempting to read file: {filePath}");
+            if (!File.Exists(filePath))
+            {
+                return null;
+            }
+
+            string contents;
+            try
+            {
+                contents = File.ReadAllText(filePath);
+            }
+            catch
+            {
+                return null;
+            }
+
+            Console.WriteLine($"File contents:\n{contents}");
+            Regex regex = new Regex(@"""(\d{17})""\s*\{[^}]*""MostRecent""\s*""1""");
+            Match match = regex.Match(contents);
+            if (match.Success)
+            {
+                return match.Groups[1].Value;
+            }
+
+            return null;
+        }
+
+        // Method to update the window title
+        private void UpdateWindowTitle()
+        {
+            string steamId = GetCurrentSteamId();
+            if (steamId != null)
+            {
+                this.Text = $"  SAM-ABB   ·   Connected as {steamId}   ·   1.0.3-beta (ik UI is trash)";
+            }
+            else
+            {
+                this.Text = "  SAM-ABB   ·   Loading...   ·   1.0.3-beta (ik UI is trash)";
+            }
+        }
+
+        private void CreateSaveDirectory(string steamId)
+        {
+            string directoryPath = Path.Combine(".", "data", "saves", steamId);
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+                Console.WriteLine($"Directory created: {directoryPath}");
+            }
+            else
+            {
+                Console.WriteLine($"Directory already exists: {directoryPath}");
+            }
+        }
+
+        private readonly API.Client _SteamClient;
         private readonly List<GameInfo> _Games;
         private readonly List<GameInfo> _FilteredGames;
         private int _SelectedGameIndex;
+        private HashSet<string> _IgnoredGameIds; // Keep this declaration
 
         public List<GameInfo> Games
         {
@@ -56,7 +109,8 @@ namespace SAM.Picker
         // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
         private readonly API.Callbacks.AppDataChanged _AppDataChangedCallback;
         // ReSharper restore PrivateFieldCanBeConvertedToLocalVariable
-
+        
+        // Remove the duplicate declaration of _IgnoredGameIds
         public GamePicker(API.Client client)
         {
             this._Games = new List<GameInfo>();
@@ -64,16 +118,29 @@ namespace SAM.Picker
             this._SelectedGameIndex = -1;
             this._LogosAttempted = new List<string>();
             this._LogoQueue = new ConcurrentQueue<GameInfo>();
-
+            this._IgnoredGameIds = new HashSet<string>(); // Initialize here
             this.InitializeComponent();
-
+            string steamId = GetCurrentSteamId();
+            if (steamId != null)
+            {
+                CreateSaveDirectory(steamId);
+                string filePath = Path.Combine(".", "data", "saves", steamId, "save.unlocks");
+                UpdateWindowTitle();
+                if (File.Exists(filePath))
+                {
+                    foreach (var line in File.ReadLines(filePath))
+                    {
+                        _IgnoredGameIds.Add(line.Trim());
+                    }
+                }
+            }
             var blank = new Bitmap(this._LogoImageList.ImageSize.Width, this._LogoImageList.ImageSize.Height);
             using (var g = Graphics.FromImage(blank))
             {
                 g.Clear(Color.DimGray);
             }
 
-            this._LogoImageList.Images.Add("Blank", blank);
+            this._LogoImageList.Images.Add ("Blank", blank);
 
             this._SteamClient = client;
 
@@ -146,31 +213,61 @@ namespace SAM.Picker
             this.unlockAllGames.Enabled = true;
             this.DownloadNextLogo();
         }
-
         private void RefreshGames()
         {
+            // Ensure _IgnoredGameIds is initialized before use
+            if (_IgnoredGameIds == null)
+            {
+                _IgnoredGameIds = new HashSet<string>(); // Initialize if null
+            }
+
             this._FilteredGames.Clear();
+
+            // Check if _Games is initialized
+            if (_Games == null)
+            {
+                Console.WriteLine("Error: _Games is not initialized.");
+                return; // Exit if _Games is null
+            }
+
             foreach (var info in this._Games.OrderBy(gi => gi.Name))
             {
-                if (info.Type == "normal" && _FilterGamesMenuItem.Checked == false)
+                // Ensure info is not null
+                if (info == null)
+                {
+                    Console.WriteLine("Warning: info is null. Skipping.");
+                    continue; // Skip this iteration if info is null
+                }
+
+                // Check if the game ID is in the ignored list
+                if (_IgnoredGameIds.Contains(info.Id.ToString()))
                 {
                     continue;
                 }
-                if (info.Type == "demo" && this._FilterDemosMenuItem.Checked == false)
+
+                // Filter games based on type and user selections
+                if (info.Type == "normal" && !_FilterGamesMenuItem.Checked)
                 {
                     continue;
                 }
-                if (info.Type == "mod" && this._FilterModsMenuItem.Checked == false)
+                if (info.Type == "demo" && !_FilterDemosMenuItem.Checked)
                 {
                     continue;
                 }
-                if (info.Type == "junk" && this._FilterJunkMenuItem.Checked == false)
+                if (info.Type == "mod" && !_FilterModsMenuItem.Checked)
                 {
                     continue;
                 }
+                if (info.Type == "junk" && !_FilterJunkMenuItem.Checked)
+                {
+                    continue;
+                }
+
+                // Add the valid game to the filtered list
                 this._FilteredGames.Add(info);
             }
 
+            // Update the GameListView with the filtered games
             this._GameListView.BeginUpdate();
             this._GameListView.VirtualListSize = this._FilteredGames.Count;
             if (this._FilteredGames.Count > 0)
@@ -178,6 +275,8 @@ namespace SAM.Picker
                 this._GameListView.RedrawItems(0, this._FilteredGames.Count - 1, true);
             }
             this._GameListView.EndUpdate();
+
+            // Update the status label with the count of displayed and total games
             this._PickerStatusLabel.Text = string.Format(
                 "Displaying {0} games. Total {1} games.",
                 this._GameListView.Items.Count,
@@ -243,7 +342,7 @@ namespace SAM.Picker
 
         private void DownloadNextLogo()
         {
-            if (this._LogoWorker.IsBusy == true)
+            if (this._LogoWorker.IsBusy)
             {
                 return;
             }
@@ -361,20 +460,62 @@ namespace SAM.Picker
                 return;
             }
 
-            try
+            string currentSteamId = GetCurrentSteamId();
+            if (currentSteamId != null)
             {
-                Process.Start("SAM.Game.exe", info.Id.ToString(CultureInfo.InvariantCulture));
-            }
-            catch (Win32Exception)
+                Console.WriteLine($"Current SteamID64: {currentSteamId}");
+                CreateSaveDirectory(currentSteamId);
+                string filePath = Path.Combine(".", "data", "saves", currentSteamId, "save.unlocks");
+                try
+                {
+                // Check if the file already exists
+                if (File.Exists(filePath))
+                {
+                    // Read existing game IDs
+                    var existingIds = new HashSet<string>(File.ReadAllLines(filePath).Select(id => id.Trim()));
+
+                    // Append the new game ID if not already present
+                    if (!existingIds.Contains(info.Id.ToString()))
+                    {
+                        File.AppendAllText(filePath, info.Id.ToString() + "\n", System.Text.Encoding.UTF8);
+                        Console.WriteLine($"Game ID appended to: {filePath}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Game ID already exists in: {filePath}");
+                    }
+                }
+                else
+                {
+                    // Create the file and write the new game ID
+                    File.WriteAllText(filePath, info.Id.ToString() + "\n", System.Text.Encoding.UTF8);
+                    Console.WriteLine($"Game ID saved to: {filePath}");
+                }
+                }
+             catch (Exception ex)
             {
-                MessageBox.Show(
-                    this,
-                    "Failed to start SAM.Game.exe.",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            Console.WriteLine($"Failed to save game ID: {ex.Message}");
         }
+    }
+    else
+    {
+        Console.WriteLine("Could not fetch the current SteamID64.");
+    }
+
+    try
+    {
+        Process.Start("SAM.Game.exe", info.Id.ToString(CultureInfo.InvariantCulture));
+    }
+    catch (Win32Exception)
+    {
+        MessageBox.Show(
+            this,
+            "Failed to start SAM.Game.exe.",
+            "Error",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error);
+    }
+}
 
         private void OnRefresh(object sender, EventArgs e)
         {
@@ -416,10 +557,51 @@ namespace SAM.Picker
             this.RefreshGames();
         }
 
-        private void unlockAllGames_Click(object sender, EventArgs e)
+        private async void unlockAllGames_Click(object sender, EventArgs e)
         {
+            // Check if save directory exists
+            string currentSteamId = GetCurrentSteamId();
+            if (currentSteamId == null)
+            {
+                Console.WriteLine("Could not fetch the current SteamID64.");
+                return;
+            }
+
+            string saveDirectory = Path.Combine(".", "data", "saves", currentSteamId);
+            if (!Directory.Exists(saveDirectory))
+            {
+                Console.WriteLine("Save directory does not exist.");
+                return;
+            }
+
+            string saveFilePath = Path.Combine(saveDirectory, "save.unlocks");
+
+            // Initialize a HashSet to store unlocked game IDs
+            HashSet<string> unlockedGameIds = new HashSet<string>();
+
+            // Check if save file exists; if not, create it
+            if (File.Exists(saveFilePath))
+            {
+                // Read existing unlocked games into the HashSet for efficient lookups
+                unlockedGameIds.UnionWith(File.ReadAllLines(saveFilePath));
+            }
+            else
+            {
+                // Create the save file if it doesn't exist
+                try
+                {
+                    using (File.Create(saveFilePath)) { } // Create and immediately close the file
+                    Console.WriteLine("Save file created: " + saveFilePath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to create save file: {ex.Message}");
+                    return; // Exit if we cannot create the file
+                }
+            }
+
             if (MessageBox.Show(
-                "This will open and close A LOT of windows.\n\nIn your case, it could be " + Games.Count + " windows.\n\nWhile this shouldn't cause a performance drop, it might get annoying if you're trying to do something.\n\nIs this OK?",
+                "This will open and close A LOT of windows.\n\nIn your case, it could be " + Games.Count + " windows.\n\nThanks to the fix it won't be an issue.\n\nMake sure to run kill_all.exe when you finished unlocking your achievements!",
                 "Warning",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning) != DialogResult.No)
@@ -428,16 +610,40 @@ namespace SAM.Picker
                 unlockAllProgress.Value = 0;
                 unlockAllProgress.Maximum = Games.Count;
 
-                foreach (var Game in Games)
+                foreach (var game in Games)
                 {
+                    // Check if game is already unlocked
+                    if (unlockedGameIds.Contains(game.Id.ToString()))
+                    {
+                        Console.WriteLine($"Game {game.Id} is already unlocked. Skipping...");
+                        unlockAllProgress.Value++;
+                        continue;
+                    }
+
                     unlockAllProgress.Value++;
                     try
                     {
-                        var process = Process.Start("SAM.Game.exe", Game.Id.ToString(CultureInfo.InvariantCulture) + " auto");
+                        var process = Process.Start("SAM.Game.exe", game.Id.ToString(CultureInfo.InvariantCulture) + " auto");
 
-                        if (process != null && process.HasExited != true)
+                        if (process != null && !process.HasExited)
                         {
-                            process.WaitForExit();
+                            await Task.Delay(3000);
+                            if (!process.HasExited)
+                            {
+                                process.Kill();
+                            }
+                        }
+
+                        // Append game ID to save file
+                        try
+                        {
+                            File.AppendAllText(saveFilePath, game.Id.ToString() + Environment.NewLine, System.Text.Encoding.UTF8);
+                            Console.WriteLine($"Game ID saved to: {saveFilePath}");
+                            unlockedGameIds.Add(game.Id.ToString()); // Add to HashSet to prevent future duplicates
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to save game ID: {ex.Message}");
                         }
                     }
                     catch (Win32Exception)
@@ -449,10 +655,18 @@ namespace SAM.Picker
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                     }
+                    catch (InvalidOperationException)
+                    {
+                        // Ignore if the process has already exited
+                    }
                 }
-
                 unlockAllProgress.Visible = false;
             }
+        }
+
+        private void GamePicker_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

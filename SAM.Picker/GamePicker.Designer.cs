@@ -60,12 +60,14 @@
             // _ToolStripSeparator1
             // 
             _ToolStripSeparator1.Name = "_ToolStripSeparator1";
-            _ToolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            _ToolStripSeparator1.Size = new System.Drawing.Size(6, 23);
+            _ToolStripSeparator1.Visible = false;
             // 
             // _ToolStripSeparator2
             // 
             _ToolStripSeparator2.Name = "_ToolStripSeparator2";
-            _ToolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            _ToolStripSeparator2.Size = new System.Drawing.Size(6, 23);
+            _ToolStripSeparator2.Visible = false;
             // 
             // _LogoImageList
             // 
@@ -81,17 +83,24 @@
             // _PickerToolStrip
             // 
             this._PickerToolStrip.BackColor = System.Drawing.Color.Black;
+            this._PickerToolStrip.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this._PickerToolStrip.CanOverflow = false;
+            this._PickerToolStrip.GripMargin = new System.Windows.Forms.Padding(0);
+            this._PickerToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this._PickerToolStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this._PickerToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._RefreshGamesButton,
             this.unlockAllGames,
-            _ToolStripSeparator1,
             this._AddGameTextBox,
+            _ToolStripSeparator1,
             this.toolStripButton1,
             _ToolStripSeparator2,
             this._FilterDropDownButton});
+            this._PickerToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
             this._PickerToolStrip.Location = new System.Drawing.Point(0, 0);
             this._PickerToolStrip.Name = "_PickerToolStrip";
-            this._PickerToolStrip.Size = new System.Drawing.Size(759, 25);
+            this._PickerToolStrip.Padding = new System.Windows.Forms.Padding(0);
+            this._PickerToolStrip.Size = new System.Drawing.Size(812, 27);
             this._PickerToolStrip.TabIndex = 1;
             this._PickerToolStrip.Text = "toolStrip1";
             // 
@@ -99,10 +108,10 @@
             // 
             this._RefreshGamesButton.ForeColor = System.Drawing.Color.White;
             this._RefreshGamesButton.Image = ((System.Drawing.Image)(resources.GetObject("_RefreshGamesButton.Image")));
+            this._RefreshGamesButton.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
             this._RefreshGamesButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this._RefreshGamesButton.Name = "_RefreshGamesButton";
-            this._RefreshGamesButton.Size = new System.Drawing.Size(105, 22);
-            this._RefreshGamesButton.Text = "Refresh Games";
+            this._RefreshGamesButton.Size = new System.Drawing.Size(24, 24);
             this._RefreshGamesButton.Click += new System.EventHandler(this.OnRefresh);
             // 
             // unlockAllGames
@@ -112,8 +121,7 @@
             this.unlockAllGames.Image = ((System.Drawing.Image)(resources.GetObject("unlockAllGames.Image")));
             this.unlockAllGames.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.unlockAllGames.Name = "unlockAllGames";
-            this.unlockAllGames.Size = new System.Drawing.Size(81, 22);
-            this.unlockAllGames.Text = "Unlock All";
+            this.unlockAllGames.Size = new System.Drawing.Size(24, 24);
             this.unlockAllGames.Click += new System.EventHandler(this.unlockAllGames_Click);
             // 
             // _AddGameTextBox
@@ -122,7 +130,8 @@
             this._AddGameTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             this._AddGameTextBox.ForeColor = System.Drawing.Color.White;
             this._AddGameTextBox.Name = "_AddGameTextBox";
-            this._AddGameTextBox.Size = new System.Drawing.Size(116, 25);
+            this._AddGameTextBox.Size = new System.Drawing.Size(116, 23);
+            this._AddGameTextBox.Visible = false;
             // 
             // toolStripButton1
             // 
@@ -130,8 +139,9 @@
             this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(83, 22);
-            this.toolStripButton1.Text = "Add Game";
+            this.toolStripButton1.Size = new System.Drawing.Size(55, 24);
+            this.toolStripButton1.Text = "New";
+            this.toolStripButton1.Visible = false;
             // 
             // _FilterDropDownButton
             // 
@@ -145,7 +155,7 @@
             this._FilterDropDownButton.Image = ((System.Drawing.Image)(resources.GetObject("_FilterDropDownButton.Image")));
             this._FilterDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this._FilterDropDownButton.Name = "_FilterDropDownButton";
-            this._FilterDropDownButton.Size = new System.Drawing.Size(29, 22);
+            this._FilterDropDownButton.Size = new System.Drawing.Size(33, 24);
             this._FilterDropDownButton.Text = "Game filtering";
             // 
             // _FilterGamesMenuItem
@@ -163,7 +173,9 @@
             // _FilterDemosMenuItem
             // 
             this._FilterDemosMenuItem.BackColor = System.Drawing.Color.Black;
+            this._FilterDemosMenuItem.Checked = true;
             this._FilterDemosMenuItem.CheckOnClick = true;
+            this._FilterDemosMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this._FilterDemosMenuItem.ForeColor = System.Drawing.Color.White;
             this._FilterDemosMenuItem.Name = "_FilterDemosMenuItem";
             this._FilterDemosMenuItem.Size = new System.Drawing.Size(142, 22);
@@ -173,7 +185,9 @@
             // _FilterModsMenuItem
             // 
             this._FilterModsMenuItem.BackColor = System.Drawing.Color.Black;
+            this._FilterModsMenuItem.Checked = true;
             this._FilterModsMenuItem.CheckOnClick = true;
+            this._FilterModsMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this._FilterModsMenuItem.ForeColor = System.Drawing.Color.White;
             this._FilterModsMenuItem.Name = "_FilterModsMenuItem";
             this._FilterModsMenuItem.Size = new System.Drawing.Size(142, 22);
@@ -183,7 +197,9 @@
             // _FilterJunkMenuItem
             // 
             this._FilterJunkMenuItem.BackColor = System.Drawing.Color.Black;
+            this._FilterJunkMenuItem.Checked = true;
             this._FilterJunkMenuItem.CheckOnClick = true;
+            this._FilterJunkMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this._FilterJunkMenuItem.ForeColor = System.Drawing.Color.White;
             this._FilterJunkMenuItem.Name = "_FilterJunkMenuItem";
             this._FilterJunkMenuItem.Size = new System.Drawing.Size(142, 22);
@@ -193,14 +209,17 @@
             // _PickerStatusStrip
             // 
             this._PickerStatusStrip.BackColor = System.Drawing.Color.Black;
+            this._PickerStatusStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this._PickerStatusStrip.ImeMode = System.Windows.Forms.ImeMode.Off;
             this._PickerStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._PickerStatusLabel,
             this._DownloadStatusLabel,
             this.unlockAllProgress});
-            this._PickerStatusStrip.Location = new System.Drawing.Point(0, 569);
+            this._PickerStatusStrip.Location = new System.Drawing.Point(0, 631);
             this._PickerStatusStrip.Name = "_PickerStatusStrip";
             this._PickerStatusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
-            this._PickerStatusStrip.Size = new System.Drawing.Size(759, 22);
+            this._PickerStatusStrip.Size = new System.Drawing.Size(812, 22);
+            this._PickerStatusStrip.SizingGrip = false;
             this._PickerStatusStrip.TabIndex = 2;
             this._PickerStatusStrip.Text = "statusStrip";
             // 
@@ -209,7 +228,7 @@
             this._PickerStatusLabel.BackColor = System.Drawing.Color.Black;
             this._PickerStatusLabel.ForeColor = System.Drawing.Color.White;
             this._PickerStatusLabel.Name = "_PickerStatusLabel";
-            this._PickerStatusLabel.Size = new System.Drawing.Size(481, 17);
+            this._PickerStatusLabel.Size = new System.Drawing.Size(795, 17);
             this._PickerStatusLabel.Spring = true;
             this._PickerStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -219,16 +238,15 @@
             this._DownloadStatusLabel.ForeColor = System.Drawing.Color.White;
             this._DownloadStatusLabel.Image = ((System.Drawing.Image)(resources.GetObject("_DownloadStatusLabel.Image")));
             this._DownloadStatusLabel.Name = "_DownloadStatusLabel";
-            this._DownloadStatusLabel.Size = new System.Drawing.Size(111, 17);
-            this._DownloadStatusLabel.Text = "Download status";
+            this._DownloadStatusLabel.Size = new System.Drawing.Size(20, 20);
             this._DownloadStatusLabel.Visible = false;
             // 
             // unlockAllProgress
             // 
-            this.unlockAllProgress.ForeColor = System.Drawing.Color.White;
+            this.unlockAllProgress.ForeColor = System.Drawing.SystemColors.WindowText;
             this.unlockAllProgress.Name = "unlockAllProgress";
-            this.unlockAllProgress.Size = new System.Drawing.Size(117, 16);
-            this.unlockAllProgress.ToolTipText = "Unlock All Progress";
+            this.unlockAllProgress.Size = new System.Drawing.Size(117, 19);
+            this.unlockAllProgress.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.unlockAllProgress.Visible = false;
             // 
             // _LogoWorker
@@ -250,11 +268,11 @@
             this._GameListView.ForeColor = System.Drawing.Color.White;
             this._GameListView.HideSelection = false;
             this._GameListView.LargeImageList = this._LogoImageList;
-            this._GameListView.Location = new System.Drawing.Point(0, 25);
+            this._GameListView.Location = new System.Drawing.Point(0, 27);
             this._GameListView.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this._GameListView.MultiSelect = false;
             this._GameListView.Name = "_GameListView";
-            this._GameListView.Size = new System.Drawing.Size(759, 544);
+            this._GameListView.Size = new System.Drawing.Size(812, 604);
             this._GameListView.SmallImageList = this._LogoImageList;
             this._GameListView.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this._GameListView.TabIndex = 0;
@@ -270,17 +288,18 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(759, 591);
+            this.ClientSize = new System.Drawing.Size(812, 653);
             this.Controls.Add(this._GameListView);
             this.Controls.Add(this._PickerStatusStrip);
             this.Controls.Add(this._PickerToolStrip);
             this.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.Color.White;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.Name = "GamePicker";
-            this.ShowIcon = false;
-            this.Text = "SAM   -   Custom-8.0   -   UNLOCK ALL IMPROVED     -   6_6_7";
+            this.Text = "  SAM-ABB   ·   Loading...   ·   1.0.3-beta (ik UI is trash)";
+            this.Load += new System.EventHandler(this.GamePicker_Load);
             this._PickerToolStrip.ResumeLayout(false);
             this._PickerToolStrip.PerformLayout();
             this._PickerStatusStrip.ResumeLayout(false);
@@ -295,7 +314,6 @@
 		private DoubleBufferedListView _GameListView;
 		private System.Windows.Forms.ImageList _LogoImageList;
 		private System.Windows.Forms.Timer _CallbackTimer;
-		private System.Windows.Forms.ToolStrip _PickerToolStrip;
 		private System.Windows.Forms.ToolStripButton _RefreshGamesButton;
 		private System.Windows.Forms.ToolStripTextBox _AddGameTextBox;
         private System.Windows.Forms.ToolStripDropDownButton _FilterDropDownButton;
@@ -311,6 +329,7 @@
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton unlockAllGames;
         private System.Windows.Forms.ToolStripProgressBar unlockAllProgress;
+        private System.Windows.Forms.ToolStrip _PickerToolStrip;
     }
 }
 

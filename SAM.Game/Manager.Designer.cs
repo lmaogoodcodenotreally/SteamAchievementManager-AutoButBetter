@@ -43,6 +43,9 @@
             this._CallbackTimer = new System.Windows.Forms.Timer(this.components);
             this._MainTabControl = new System.Windows.Forms.TabControl();
             this._AchievementsTabPage = new System.Windows.Forms.TabPage();
+            this._AchievementListView = new SAM.Game.DoubleBufferedListView();
+            this._AchievementNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this._AchievementDescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._AchievementsToolStrip = new System.Windows.Forms.ToolStrip();
             this._LockAllButton = new System.Windows.Forms.ToolStripButton();
             this._InvertAllButton = new System.Windows.Forms.ToolStripButton();
@@ -50,9 +53,6 @@
             this._StatisticsTabPage = new System.Windows.Forms.TabPage();
             this._EnableStatsEditingCheckBox = new System.Windows.Forms.CheckBox();
             this._StatisticsDataGridView = new System.Windows.Forms.DataGridView();
-            this._AchievementListView = new SAM.Game.DoubleBufferedListView();
-            this._AchievementNameColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this._AchievementDescriptionColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             _ToolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this._MainToolStrip.SuspendLayout();
             this._MainStatusStrip.SuspendLayout();
@@ -65,6 +65,7 @@
             // 
             // _ToolStripSeparator1
             // 
+            _ToolStripSeparator1.ForeColor = System.Drawing.Color.White;
             _ToolStripSeparator1.Name = "_ToolStripSeparator1";
             _ToolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
@@ -117,7 +118,7 @@
             // 
             this._AchievementImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
             this._AchievementImageList.ImageSize = new System.Drawing.Size(64, 64);
-            this._AchievementImageList.TransparentColor = System.Drawing.Color.Transparent;
+            this._AchievementImageList.TransparentColor = System.Drawing.Color.Black;
             // 
             // _MainStatusStrip
             // 
@@ -171,6 +172,7 @@
             // 
             // _AchievementsTabPage
             // 
+            this._AchievementsTabPage.BackColor = System.Drawing.Color.Black;
             this._AchievementsTabPage.Controls.Add(this._AchievementListView);
             this._AchievementsTabPage.Controls.Add(this._AchievementsToolStrip);
             this._AchievementsTabPage.Location = new System.Drawing.Point(4, 22);
@@ -179,92 +181,6 @@
             this._AchievementsTabPage.Size = new System.Drawing.Size(608, 308);
             this._AchievementsTabPage.TabIndex = 0;
             this._AchievementsTabPage.Text = "Achievements";
-            this._AchievementsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // _AchievementsToolStrip
-            // 
-            this._AchievementsToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._LockAllButton,
-            this._InvertAllButton,
-            this._UnlockAllButton});
-            this._AchievementsToolStrip.Location = new System.Drawing.Point(3, 3);
-            this._AchievementsToolStrip.Name = "_AchievementsToolStrip";
-            this._AchievementsToolStrip.Size = new System.Drawing.Size(602, 25);
-            this._AchievementsToolStrip.TabIndex = 5;
-            // 
-            // _LockAllButton
-            // 
-            this._LockAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this._LockAllButton.Image = global::SAM.Game.Properties.Resources.Lock;
-            this._LockAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this._LockAllButton.Name = "_LockAllButton";
-            this._LockAllButton.Size = new System.Drawing.Size(23, 22);
-            this._LockAllButton.Text = "Lock All";
-            this._LockAllButton.ToolTipText = "Lock all achievements.";
-            this._LockAllButton.Click += new System.EventHandler(this.OnLockAll);
-            // 
-            // _InvertAllButton
-            // 
-            this._InvertAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this._InvertAllButton.Image = global::SAM.Game.Properties.Resources.Invert;
-            this._InvertAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this._InvertAllButton.Name = "_InvertAllButton";
-            this._InvertAllButton.Size = new System.Drawing.Size(23, 22);
-            this._InvertAllButton.Text = "Invert All";
-            this._InvertAllButton.ToolTipText = "Invert all achievements.";
-            this._InvertAllButton.Click += new System.EventHandler(this.OnInvertAll);
-            // 
-            // _UnlockAllButton
-            // 
-            this._UnlockAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this._UnlockAllButton.Image = global::SAM.Game.Properties.Resources.Unlock;
-            this._UnlockAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this._UnlockAllButton.Name = "_UnlockAllButton";
-            this._UnlockAllButton.Size = new System.Drawing.Size(23, 22);
-            this._UnlockAllButton.Text = "Unlock All";
-            this._UnlockAllButton.ToolTipText = "Unlock all achievements.";
-            this._UnlockAllButton.Click += new System.EventHandler(this.OnUnlockAll);
-            // 
-            // _StatisticsTabPage
-            // 
-            this._StatisticsTabPage.Controls.Add(this._EnableStatsEditingCheckBox);
-            this._StatisticsTabPage.Controls.Add(this._StatisticsDataGridView);
-            this._StatisticsTabPage.Location = new System.Drawing.Point(4, 22);
-            this._StatisticsTabPage.Name = "_StatisticsTabPage";
-            this._StatisticsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this._StatisticsTabPage.Size = new System.Drawing.Size(608, 308);
-            this._StatisticsTabPage.TabIndex = 1;
-            this._StatisticsTabPage.Text = "Statistics";
-            this._StatisticsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // _EnableStatsEditingCheckBox
-            // 
-            this._EnableStatsEditingCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._EnableStatsEditingCheckBox.AutoSize = true;
-            this._EnableStatsEditingCheckBox.Location = new System.Drawing.Point(6, 285);
-            this._EnableStatsEditingCheckBox.Name = "_EnableStatsEditingCheckBox";
-            this._EnableStatsEditingCheckBox.Size = new System.Drawing.Size(512, 17);
-            this._EnableStatsEditingCheckBox.TabIndex = 1;
-            this._EnableStatsEditingCheckBox.Text = "I understand by modifying the values of stats, I may screw things up and can\'t bl" +
-    "ame anyone but myself.";
-            this._EnableStatsEditingCheckBox.UseVisualStyleBackColor = true;
-            this._EnableStatsEditingCheckBox.CheckedChanged += new System.EventHandler(this.OnStatAgreementChecked);
-            // 
-            // _StatisticsDataGridView
-            // 
-            this._StatisticsDataGridView.AllowUserToAddRows = false;
-            this._StatisticsDataGridView.AllowUserToDeleteRows = false;
-            this._StatisticsDataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._StatisticsDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this._StatisticsDataGridView.Location = new System.Drawing.Point(6, 6);
-            this._StatisticsDataGridView.Name = "_StatisticsDataGridView";
-            this._StatisticsDataGridView.Size = new System.Drawing.Size(596, 273);
-            this._StatisticsDataGridView.TabIndex = 0;
-            this._StatisticsDataGridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.OnStatCellEndEdit);
-            this._StatisticsDataGridView.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.OnStatDataError);
             // 
             // _AchievementListView
             // 
@@ -301,15 +217,107 @@
             this._AchievementDescriptionColumnHeader.Text = "Description";
             this._AchievementDescriptionColumnHeader.Width = 380;
             // 
+            // _AchievementsToolStrip
+            // 
+            this._AchievementsToolStrip.BackColor = System.Drawing.Color.Black;
+            this._AchievementsToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this._LockAllButton,
+            this._InvertAllButton,
+            this._UnlockAllButton});
+            this._AchievementsToolStrip.Location = new System.Drawing.Point(3, 3);
+            this._AchievementsToolStrip.Name = "_AchievementsToolStrip";
+            this._AchievementsToolStrip.Size = new System.Drawing.Size(602, 25);
+            this._AchievementsToolStrip.TabIndex = 5;
+            // 
+            // _LockAllButton
+            // 
+            this._LockAllButton.BackColor = System.Drawing.Color.Black;
+            this._LockAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this._LockAllButton.Image = global::SAM.Game.Properties.Resources.Lock;
+            this._LockAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this._LockAllButton.Name = "_LockAllButton";
+            this._LockAllButton.Size = new System.Drawing.Size(23, 22);
+            this._LockAllButton.Text = "Lock All";
+            this._LockAllButton.ToolTipText = "Lock all achievements.";
+            this._LockAllButton.Click += new System.EventHandler(this.OnLockAll);
+            // 
+            // _InvertAllButton
+            // 
+            this._InvertAllButton.BackColor = System.Drawing.Color.Black;
+            this._InvertAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this._InvertAllButton.Image = global::SAM.Game.Properties.Resources.Invert;
+            this._InvertAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this._InvertAllButton.Name = "_InvertAllButton";
+            this._InvertAllButton.Size = new System.Drawing.Size(23, 22);
+            this._InvertAllButton.Text = "Invert All";
+            this._InvertAllButton.ToolTipText = "Invert all achievements.";
+            this._InvertAllButton.Click += new System.EventHandler(this.OnInvertAll);
+            // 
+            // _UnlockAllButton
+            // 
+            this._UnlockAllButton.BackColor = System.Drawing.Color.Black;
+            this._UnlockAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this._UnlockAllButton.Image = global::SAM.Game.Properties.Resources.Unlock;
+            this._UnlockAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this._UnlockAllButton.Name = "_UnlockAllButton";
+            this._UnlockAllButton.Size = new System.Drawing.Size(23, 22);
+            this._UnlockAllButton.Text = "Unlock All";
+            this._UnlockAllButton.ToolTipText = "Unlock all achievements.";
+            this._UnlockAllButton.Click += new System.EventHandler(this.OnUnlockAll);
+            // 
+            // _StatisticsTabPage
+            // 
+            this._StatisticsTabPage.BackColor = System.Drawing.Color.Black;
+            this._StatisticsTabPage.Controls.Add(this._EnableStatsEditingCheckBox);
+            this._StatisticsTabPage.Controls.Add(this._StatisticsDataGridView);
+            this._StatisticsTabPage.Location = new System.Drawing.Point(4, 22);
+            this._StatisticsTabPage.Name = "_StatisticsTabPage";
+            this._StatisticsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this._StatisticsTabPage.Size = new System.Drawing.Size(608, 308);
+            this._StatisticsTabPage.TabIndex = 1;
+            this._StatisticsTabPage.Text = "Statistics";
+            // 
+            // _EnableStatsEditingCheckBox
+            // 
+            this._EnableStatsEditingCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this._EnableStatsEditingCheckBox.AutoSize = true;
+            this._EnableStatsEditingCheckBox.Location = new System.Drawing.Point(6, 285);
+            this._EnableStatsEditingCheckBox.Name = "_EnableStatsEditingCheckBox";
+            this._EnableStatsEditingCheckBox.Size = new System.Drawing.Size(512, 17);
+            this._EnableStatsEditingCheckBox.TabIndex = 1;
+            this._EnableStatsEditingCheckBox.Text = "I understand by modifying the values of stats, I may screw things up and can\'t bl" +
+    "ame anyone but myself.";
+            this._EnableStatsEditingCheckBox.UseVisualStyleBackColor = true;
+            this._EnableStatsEditingCheckBox.CheckedChanged += new System.EventHandler(this.OnStatAgreementChecked);
+            // 
+            // _StatisticsDataGridView
+            // 
+            this._StatisticsDataGridView.AllowUserToAddRows = false;
+            this._StatisticsDataGridView.AllowUserToDeleteRows = false;
+            this._StatisticsDataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this._StatisticsDataGridView.BackgroundColor = System.Drawing.Color.Black;
+            this._StatisticsDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this._StatisticsDataGridView.GridColor = System.Drawing.Color.White;
+            this._StatisticsDataGridView.Location = new System.Drawing.Point(6, 6);
+            this._StatisticsDataGridView.Name = "_StatisticsDataGridView";
+            this._StatisticsDataGridView.Size = new System.Drawing.Size(596, 273);
+            this._StatisticsDataGridView.TabIndex = 0;
+            this._StatisticsDataGridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.OnStatCellEndEdit);
+            this._StatisticsDataGridView.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.OnStatDataError);
+            // 
             // Manager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.MenuHighlight;
+            this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(632, 392);
             this.Controls.Add(this._MainToolStrip);
             this.Controls.Add(this._MainTabControl);
             this.Controls.Add(this._MainStatusStrip);
+            this.ForeColor = System.Drawing.Color.White;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(640, 50);
             this.Name = "Manager";
