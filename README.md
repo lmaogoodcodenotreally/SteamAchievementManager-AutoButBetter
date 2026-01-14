@@ -6,7 +6,7 @@
 
 # Steam Achievement Manager Auto but with minor improvements
 - Forked from [SAM Auto release](https://github.com/FarukGamer/SteamAchievementManager-Auto/releases/latest).
-- This code is based on the Upstream PR in https://github.com/gibbed/SteamAchievementManager/pull/62
+- This code is based on https://github.com/gibbed/SteamAchievementManager/pull/62 (All credits to this base)
 
 
 ## What's new
