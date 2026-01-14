@@ -10,22 +10,19 @@
 
 
 ## What's new
+- Darkmode (wow)
 - A new "Unlock All" feature has been added that loops through all of the displayed games and unlocks everything automatically.
+- Autosave/autoload for unlock all
+- No more being stuck using unlock all
 - Unlock All no ALT TAB you to your desktop while playing a full screen game
-- Game Window is not shown in taskbar
-- Game window will start minimized while picker window stay unchanged
-- Less goofy default size for picker
+- Game Window is not shown in taskbar and will start minimized while picker window stay unchanged
+- Modified default size
 
 ## Known issues
-- I added a placeholder text and forgot to hide it.
-- Sometimes some game windows can stay opened, so we made killall.bat, make sure to use it !
-## Will I get banned for using the "Unlock All" feature?
-
-- "I ran it on over 3600 games with achievements, yet no community ban or sanction toward the account as of 03/22/2024", 6_6_7
-- "Honestly, I'm not really sure. I doubt it's any worse than just using this program normally. I let it run through 460+ games and I'm doing fine. Please don't hold me or the original author responsible for any damages this could cause.", FarukGamer
+- UI looks ahh 
 
 ## Attribution
 
-- Most (if not all) icons are from the [Fugue Icons](http://p.yusukekamiyamane.com/) set.
+- Most (if not all) icons are from the [Fugue Icons](http://p.yusukekamiyamane.com/) set. (Note from fork, I think I added more but cant remember where they are from, feel free to open issue to correct me on this, brain issue moment)
 - Credits to [Gibbed](https://github.com/gibbed/) for [Steam Achievement Manager](https://github.com/gibbed/SteamAchievementManager) 
  [SAM Auto release](https://github.com/FarukGamer/SteamAchievementManager-Auto/releases/latest).
