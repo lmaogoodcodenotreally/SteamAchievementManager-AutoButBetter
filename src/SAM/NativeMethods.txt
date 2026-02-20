@@ -1,0 +1,18 @@
+﻿// macros
+HWND
+PCSTR
+ATTACH_PARENT_PROCESS
+STD_HANDLE
+INVALID_HANDLE_VALUE
+// functions
+CloseHandle
+DeleteObject
+FreeLibrary
+GetProcAddress
+LoadLibraryEx
+SetDllDirectory
+SetForegroundWindow
+ShowWindowAsync
+AttachConsole
+WriteConsole
+GetStdHandle

@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Blank.ico</ApplicationIcon>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Blank.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Blank.ico" />
+    <Content Include="Resources\arrow-circle-double.png" />
+    <Content Include="Resources\bomb.png" />
+    <Content Include="Resources\download-cloud.png" />
+    <Content Include="Resources\lock--pencil.png" />
+    <Content Include="Resources\lock-unlock.png" />
+    <Content Include="Resources\lock.png" />
+    <Content Include="Resources\poop-smiley-sad-enlarged.png" />
+    <Content Include="Resources\poop-smiley-sad.png" />
+    <Content Include="Resources\transmitter.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SAM.API\SAM.API.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

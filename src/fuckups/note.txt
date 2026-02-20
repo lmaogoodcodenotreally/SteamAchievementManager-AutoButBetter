@@ -1,0 +1,7 @@
+Game process added : AppID 3469930 ""C:\Program Files (x86)\Steam\steamapps\common\SAM\testapp_3469930.exe"", ProcID 73144, IP 0.0.0.0:0
+Game process removed: AppID 3092750 ""C:\Program Files (x86)\Steam\steamapps\common\SAM\testapp_3092750.exe"", ProcID 66248 
+src\clientdll\userstats.cpp (5871) : Assertion Failed: Stat "Level01_Bath" not found in progress block for achievement "Level01_Bath"
+src\clientdll\userstats.cpp (5871) : Assertion Failed: Stat "Level02_Explorer" not found in progress block for achievement "Level02_Explorer"
+src\clientdll\userstats.cpp (5871) : Assertion Failed: Stat "Level03_FInal" not found in progress block for achievement "Level03_FInal"
+Game process added : AppID 377260 ""C:\Program Files (x86)\Steam\steamapps\common\SAM\testapp_377260.exe"", ProcID 44796, IP 0.0.0.0:0
+Game process removed: AppID 2263010 ""C:\Program Files (x86)\Steam\steamapps\common\SAM\testapp_2263010.exe"", ProcID 73532 

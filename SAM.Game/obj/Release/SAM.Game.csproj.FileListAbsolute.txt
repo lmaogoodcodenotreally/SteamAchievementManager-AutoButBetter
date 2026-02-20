@@ -1,9 +1,0 @@
-C:\Users\User\source\repos\SteamAchievementManager-Auto\upload\SAM.Game.exe.config
-C:\Users\User\source\repos\SteamAchievementManager-Auto\upload\SAM.Game.exe
-C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Release\SAM.Game.csproj.AssemblyReference.cache
-C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Release\SAM.Game.Manager.resources
-C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Release\SAM.Game.Properties.Resources.resources
-C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Release\SAM.Game.csproj.GenerateResource.cache
-C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Release\SAM.Game.csproj.CoreCompileInputs.cache
-C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Release\SAM.Game.csproj.Up2Date
-C:\Users\User\source\repos\SteamAchievementManager-Auto\SAM.Game\obj\Release\SAM.Game.exe

@@ -1,0 +1,161 @@
+﻿<UserControl x:Class="SAM.Views.MenuView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:SAM.ViewModels"
+             xmlns:sam="clr-namespace:SAM"
+             xmlns:controls="clr-namespace:SAM.Controls"
+             xmlns:converters="clr-namespace:SAM.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type={x:Type vm:MenuViewModel}, IsDesignTimeCreatable=False}">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/SAM;component/Styles/Controls/MenuStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Horizontal">
+        <Separator Margin="8,4,2,4" />
+        <Menu IsMainMenu="True" HorizontalAlignment="Left" FontSize="12">
+            <ui:MenuItem Header="File" Icon="{ui:SymbolIcon Document20}">
+                <ui:MenuItem Header="Export Library (.json)" Icon="{ui:SymbolIcon ArrowExport24}" Command="{Binding ExportAppsCommand}"
+                             Visibility="{Binding IsLibrary, Converter={dxmvvm:BooleanToVisibilityConverter}}" />
+                <Separator Visibility="{Binding IsLibrary, Converter={dxmvvm:BooleanToVisibilityConverter}}"/>
+                <ui:MenuItem Header="Exit" Icon="{ui:SymbolIcon ArrowExit20}" Command="{Binding ExitCommand}" />
+            </ui:MenuItem>
+            <ui:MenuItem Header="Unlock All" Icon="{ui:SymbolIcon LockClosed24}"
+                         Visibility="{Binding IsLibrary, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+                <ui:MenuItem Header="Start Unlock All Games" Icon="{ui:SymbolIcon PlayCircle24}" Command="{Binding StartUnlockAllCommand}"
+                             IsEnabled="{Binding HomeVm.CurrentVm.Library.IsLoading, Converter={StaticResource BooleanNegationConverter}}" />
+                <Separator />
+                <controls:MenuHeaderItem Header="Resume" />
+                <ui:MenuItem Header="Clear Save File" Icon="{ui:SymbolIcon Delete24}" Command="{Binding ClearSaveFileCommand}" />
+                <Separator />
+                <controls:MenuHeaderItem Header="Settings" />
+                <ui:MenuItem Header="Max steamwebhelper RAM (MB)" IsHitTestVisible="False">
+                    <ui:MenuItem.Icon>
+                        <ui:SymbolIcon Symbol="Ram20" />
+                    </ui:MenuItem.Icon>
+                </ui:MenuItem>
+                <ui:MenuItem>
+                    <ui:MenuItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox Text="{Binding UnlockAllSettings.MaxProcessSizeMB, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"
+                                     Width="70" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            <TextBlock Text="MB  (0 = disabled)" VerticalAlignment="Center" Foreground="Gray" />
+                        </StackPanel>
+                    </ui:MenuItem.Header>
+                </ui:MenuItem>
+            </ui:MenuItem>
+            <ui:MenuItem Header="View" Icon="{ui:SymbolIcon Grid24}"
+                         Visibility="{Binding IsLibrary, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+                <controls:MenuHeaderItem Header="Display" />
+                <ui:MenuItem Header="Grid" IsCheckable="True"
+                             Command="{Binding HomeVm.ShowLibraryGridCommand, FallbackValue={x:Null}}">
+                    <ui:MenuItem.Style>
+                        <Style TargetType="{x:Type ui:MenuItem}">
+                            <Setter Property="Icon" Value="{ui:SymbolIcon RowTriple24}" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="IsHitTestVisible" Value="False" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Icon" Value="{ui:SymbolIcon RowTriple24, Filled=True}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding HomeVm.LibraryViewType}" Value="{x:Static sam:LibraryView.DataGrid}">
+                                    <Setter Property="IsChecked" Value="True" />
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:MenuItem.Style>
+                </ui:MenuItem>
+                <ui:MenuItem Header="Tile" IsCheckable="True"
+                             Command="{Binding HomeVm.ShowLibraryTileCommand, FallbackValue={x:Null}}">
+                    <ui:MenuItem.Style>
+                        <Style TargetType="{x:Type ui:MenuItem}">
+                            <Setter Property="Icon" Value="{ui:SymbolIcon GridKanban20}" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="IsHitTestVisible" Value="False" />
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Icon" Value="{ui:SymbolIcon GridKanban20, Filled=True}" />
+                                </Trigger>
+                                <DataTrigger Binding="{Binding HomeVm.LibraryViewType}" Value="{x:Static sam:LibraryView.Tile}">
+                                    <Setter Property="IsChecked" Value="True" />
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:MenuItem.Style>
+                </ui:MenuItem>
+                <Separator Visibility="{Binding HomeVm.CurrentSettings.EnableGrouping, Converter={dxmvvm:BooleanToVisibilityConverter}}" />
+                <controls:MenuHeaderItem Header="Groups" Visibility="{Binding HomeVm.CurrentSettings.EnableGrouping, Converter={dxmvvm:BooleanToVisibilityConverter}}" />
+                <ui:MenuItem Header="Expand All"
+                             Command="{Binding HomeVm.CurrentVm.ExpandAllCommand}"
+                             Icon="{ui:SymbolIcon ArrowMaximizeVertical24}"
+                             Visibility="{Binding HomeVm.CurrentSettings.EnableGrouping, Converter={dxmvvm:BooleanToVisibilityConverter}}" />
+                <ui:MenuItem Header="Collapse All"
+                             Command="{Binding HomeVm.CurrentVm.CollapseAllCommand}"
+                             Icon="{ui:SymbolIcon ArrowMinimizeVertical24}"
+                             Visibility="{Binding HomeVm.CurrentSettings.EnableGrouping, Converter={dxmvvm:BooleanToVisibilityConverter}}" />
+                <Separator />
+                <controls:MenuHeaderItem Header="Options" />
+                <ui:MenuItem Header="Enable Grouping" IsCheckable="True"
+                             IsChecked="{Binding HomeVm.CurrentSettings.EnableGrouping, FallbackValue=False, Mode=TwoWay}" />
+                <ui:MenuItem Header="Show Images" IsCheckable="True"
+                             IsChecked="{Binding HomeVm.Settings.TileSettings.ShowImages, FallbackValue=False, Mode=TwoWay}"
+                             Visibility="{Binding HomeVm.LibraryViewType, Converter={converters:EnumToVisibilityConverter}, ConverterParameter={x:Static sam:LibraryView.Tile}}" />
+                <!--<ui:MenuItem Header="Local Images Only" IsCheckable="True"
+                             IsChecked="{Binding HomeVm.LocalImagesOnly, FallbackValue=False, Mode=TwoWay}"
+                             Command="{Binding HomeVm.ToggleLocalImagesOnlyCommand, FallbackValue={x:Null}}" />-->
+                <Separator />
+                <controls:MenuHeaderItem Header="Hidden Apps" />
+                <ui:MenuItem Header="Show Hidden" IsCheckable="True"
+                             IsChecked="{Binding HomeVm.CurrentSettings.ShowHidden, FallbackValue=False, Mode=TwoWay}" />
+                <Separator />
+                <controls:MenuHeaderItem Header="Favorite Apps" />
+                <ui:MenuItem Header="Show Only Favorites" IsCheckable="True"
+                             IsChecked="{Binding HomeVm.CurrentSettings.ShowFavoritesOnly, FallbackValue=False, Mode=TwoWay}" />
+            </ui:MenuItem>
+            <ui:MenuItem Header="Tools" Icon="{ui:SymbolIcon Toolbox24}">
+                <controls:MenuHeaderItem Header="Steam" IsEnabled="False" />
+                <ui:MenuItem Header="Console" Command="{Binding OpenSteamConsoleCommand}" />
+            </ui:MenuItem>
+            <ui:MenuItem Header="Help" Icon="{ui:SymbolIcon Question24}">
+                <ui:MenuItem Header="Reset to Default" Icon="{ui:SymbolIcon ArrowReset24}" Command="{Binding ResetAllSettingsCommand}" />
+                <Separator />
+                <ui:MenuItem Header="View Logs" Icon="{ui:SymbolIcon History24}" Command="{Binding ViewLogsCommand}" />
+                <Separator />
+                <ui:MenuItem Header="Report Issue" Icon="{ui:SymbolIcon Bug24}" Command="{Binding ViewIssuesOnGitHubCommand}" />
+                <Separator />
+                <controls:MenuHeaderItem Header="About" />
+                <ui:MenuItem Header="Version History" Icon="{ui:SymbolIcon DocumentBulletList24}"
+                             Command="{Binding ViewChangelogOnGitHubCommand}" />
+                <ui:MenuItem Header="View on GitHub" Icon="{ui:SymbolIcon Code24}"
+                             Command="{Binding ViewOnGitHubCommand}" />
+            </ui:MenuItem>
+        </Menu>
+        <Separator Margin="0,4,4,4" 
+                   Visibility="{Binding IsLibrary, Converter={dxmvvm:BooleanToVisibilityConverter}}" />
+        <ui:AutoSuggestBox Text="{Binding HomeVm.CurrentVm.FilterText, Delay=300, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                           PlaceholderText="Search..." BorderBrush="Transparent"
+                           Icon="Search24" Margin="5,3" FontSize="13" Padding="3,0" Height="30"
+                           OriginalItemsSource="{Binding HomeVm.CurrentVm.Suggestions, Mode=OneWay}"
+                           Width="400"
+                           Visibility="{Binding IsLibrary, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+            <ui:AutoSuggestBox.Style>
+                <Style TargetType="{x:Type ui:AutoSuggestBox}" BasedOn="{StaticResource BaseUiAutoSuggestBoxStyle}" />
+            </ui:AutoSuggestBox.Style>
+        </ui:AutoSuggestBox>
+    </StackPanel>
+
+</UserControl>
