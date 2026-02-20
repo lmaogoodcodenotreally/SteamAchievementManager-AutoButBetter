@@ -1,0 +1,1 @@
+-    New update need to do readme when I have time. Rn just compile from source if you want or check Legacy branch or releases
