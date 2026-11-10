@@ -328,8 +328,15 @@ public partial class SteamGameViewModel
         AllowUnlockAll = Achievements!.Any(a => !a.IsAchieved);
 
         _achievementsPropertyHandler = new ObservableCollectionPropertyHandler<ObservableCollection<SteamAchievement>, SteamAchievement>(Achievements)
-            .Add(a => a.IsModified, OnAchievementModifiedHandler);
+            .Add(a => a.IsModified, OnAchievementModifiedHandler)
+            .Add(a => a.IsAchieved, OnAchievementAchievedHandler);
 
+        Refresh();
+    }
+
+    private void OnAchievementAchievedHandler(ObservableCollection<SteamAchievement> arg1, SteamAchievement arg2)
+    {
+        AllowUnlockAll = Achievements!.Any(a => !a.IsAchieved);
         Refresh();
     }
 

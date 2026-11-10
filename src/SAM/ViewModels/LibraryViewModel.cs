@@ -116,8 +116,8 @@ public partial class LibraryViewModel
                 log.Info("Refreshing SteamUser profile...");
                 try
                 {
-                    await User.Refresh();
-                    try { System.IO.File.AppendAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "SAM_instrument.log"), $"{DateTime.UtcNow:O} LibraryViewModel.Refresh User.Refresh completed\n"); } catch { }
+                    // not awaited: the profile/avatar download (~1-3s) shouldn't hold back the library list
+                    _ = User.Refresh();
                 }
                 catch (Exception ux)
                 {

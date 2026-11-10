@@ -151,16 +151,11 @@
 
             <StatusBarItem HorizontalAlignment="Right" Padding="0" Margin="0">
                 <StackPanel Orientation="Horizontal">
-                    <StatusBarItem Margin="0,0,8,0">
-                        <Image Source="{Binding User.AvatarFull, Mode=OneWay}" 
-                               Width="20" Height="20" 
-                               Stretch="UniformToFill" />
-                    </StatusBarItem>
-                    <StatusBarItem x:Name="SteamIdStatusItem" 
-                                   Content="{Binding User.PersonaAndId, Mode=OneWay, FallbackValue={x:Null}, TargetNullValue={x:Null}}" />
                     <StatusBarItem Content="{Binding Library.PercentComplete, Mode=OneWay, FallbackValue=0, TargetNullValue=0, Converter={StaticResource PercentFormatConverter}}"
-                                   ContentStringFormat="{}Loading... {0}" 
+                                   ContentStringFormat="{}Loading... {0}"
                                    Visibility="{Binding Library.IsLoading, FallbackValue=Collapsed, TargetNullValue=Collapsed, Converter={dxmvvm:BooleanToVisibilityConverter}}" />
+                    <StatusBarItem Content="{Binding DataContext.MenuVm.LoadingCompletedMessage, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type ui:FluentWindow}}}"
+                                   Visibility="{Binding DataContext.MenuVm.LoadingCompletedMessage, Mode=OneWay, RelativeSource={RelativeSource AncestorType={x:Type ui:FluentWindow}}, Converter={dxmvvm:StringToVisibilityConverter}}" />
                     <StatusBarItem Visibility="{Binding Library.IsLoading, FallbackValue=Collapsed, TargetNullValue=Collapsed, Converter={dxmvvm:BooleanToVisibilityConverter Inverse=True}}"
                                    Margin="8,0,0,0" Padding="0">
                         <ui:Button Content="Refresh" Icon="ArrowSync20"

@@ -38,6 +38,12 @@ public partial class MenuViewModel
     [GenerateProperty] private bool _isUnlocking;
     [GenerateProperty] private double _unlockProgressPercent;
     [GenerateProperty] private string _unlockProgressText = string.Empty;
+    [GenerateProperty] private string _loadingCompletedMessage = string.Empty;
+
+    [GenerateProperty]
+    private bool _canStartUnlockAll;
+
+    private CancellationTokenSource _loadingMessageCts;
 
     public bool IsLibrary => _mode == ApplicationMode.Default;
     public bool IsManager => _mode == ApplicationMode.Manager;
@@ -51,16 +57,38 @@ public partial class MenuViewModel
         _homeHandler = new ObservableHandler<HomeViewModel>(homeVm)
             .Add(h => h.CurrentVm, OnHomeViewChanged);
 
-        // Ensure Unlock All command updates availability when library loading changes
+        // Ensure Unlock All command updates availability when library loading changes or items collection changes
         if (SteamLibraryManager.DefaultLibrary != null)
         {
+            UpdateCanStartUnlockAll();
+
             SteamLibraryManager.DefaultLibrary.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(SteamLibrary.IsLoading))
+                if (e.PropertyName == nameof(SteamLibrary.IsLoading) || e.PropertyName == nameof(SteamLibrary.Items))
                 {
+                    UpdateCanStartUnlockAll();
                     CommandManager.InvalidateRequerySuggested();
+
+                    // Show "Loaded." message when loading completes
+                    if (e.PropertyName == nameof(SteamLibrary.IsLoading) && !SteamLibraryManager.DefaultLibrary.IsLoading)
+                    {
+                        ShowLoadingCompletedMessage();
+                        StartSchemaPrefetch();
+                    }
                 }
             };
+
+            if (!SteamLibraryManager.DefaultLibrary.IsLoading) StartSchemaPrefetch();
+
+            // Also listen to collection changes if Items is already initialized
+            if (SteamLibraryManager.DefaultLibrary.Items != null)
+            {
+                SteamLibraryManager.DefaultLibrary.Items.CollectionChanged += (s, e) =>
+                {
+                    UpdateCanStartUnlockAll();
+                    CommandManager.InvalidateRequerySuggested();
+                };
+            }
         }
     }
 
@@ -225,8 +253,15 @@ public partial class MenuViewModel
     }
 
     [GenerateCommand]
-    public async void StartUnlockAll()
+    public async void StartUnlockAll() => await RunAllAsync(false);
+
+    // locks every achievement of every library game again, to reset a test account
+    [GenerateCommand]
+    public async void RelockAll() => await RunAllAsync(true);
+
+    private async Task RunAllAsync(bool relock)
     {
+        var verb = relock ? "Relock" : "Unlock";
         try
         {
             var steamId = SteamHelper.GetCurrentSteamId();
@@ -260,29 +295,43 @@ public partial class MenuViewModel
             }
 
             var totalGames = library.Items.Count;
-            var allGames = library.Items.ToList();
-            var gamesToUnlock = allGames.Where(g => !unlockedGameIds.Contains(g.Id.ToString())).ToList();
+            var skipFilePath = SteamHelper.GetSkipFilePath(steamId);
+            var skippedGameIds = SteamHelper.LoadSkippedGames(steamId);
+            var allGames = library.Items.Where(g => !skippedGameIds.Contains((uint) g.Id)).ToList();
+            var ignoredCount = totalGames - allGames.Count;
+            var ignoredNote = ignoredCount > 0 ? $"\n\n{ignoredCount} game(s) that can't be unlocked on this account are ignored (Clear Save File re-checks them)." : string.Empty;
+            var gamesToUnlock = relock ? allGames : allGames.Where(g => !unlockedGameIds.Contains(g.Id.ToString())).ToList();
 
             if (!gamesToUnlock.Any())
             {
-                MessageBox.Show("All games have already been unlocked!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("All games have already been unlocked!" + ignoredNote, "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var result = MessageBox.Show(
-                $"This will unlock achievements for {gamesToUnlock.Count} games (skipping {totalGames - gamesToUnlock.Count} already unlocked).\n\n" +
-                $"Continue?",
-                "Confirm Unlock All",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+            var confirmed = relock
+                ? MessageBox.Show(
+                      $"This will RELOCK (clear) every achievement in all {gamesToUnlock.Count} games on this Steam account.{ignoredNote}\n\nContinue?",
+                      "Confirm Relock All", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes
+                  && MessageBox.Show(
+                      $"Are you sure?\n\nAll achievements in {gamesToUnlock.Count} games will be locked and their original unlock dates will be lost. This cannot be undone.",
+                      "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes
+                : MessageBox.Show(
+                      $"This will unlock achievements for {gamesToUnlock.Count} games (skipping {allGames.Count - gamesToUnlock.Count} already unlocked).{ignoredNote}\n\nContinue?",
+                      "Confirm Unlock All", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
 
-            if (result != MessageBoxResult.Yes)
+            if (!confirmed)
             {
-                log.Info("User cancelled Unlock All operation.");
+                log.Info($"User cancelled {verb} All operation.");
                 return;
             }
 
-            log.Info($"Starting Unlock All for {gamesToUnlock.Count} games...");
+            if (relock)
+            {
+                // relocked games must be processed again by the next Unlock All
+                File.Delete(saveFilePath);
+            }
+
+            log.Info($"Starting {verb} All for {gamesToUnlock.Count} games...");
 
             // cancel any in-progress library refresh to avoid concurrent collection modifications
             try
@@ -295,6 +344,7 @@ public partial class MenuViewModel
             var previousLoading = library.IsLoading;
             var monitorCts = new CancellationTokenSource();
             Task monitorTask = null;
+            var aborted = false;
             try
             {
                 library.IsLoading = true;
@@ -305,6 +355,9 @@ public partial class MenuViewModel
                 const int STEAM_RECONNECT_SETTLE_MS = 15000;
                 const int MAX_STEAM_WAIT_MINUTES = 30;
                 int consecutiveSteamFailures = 0;
+
+                // helpers running at once; each one mostly waits on Steam, so this divides total time
+                const int UNLOCK_CONCURRENCY = 3;
 
                 var maxProcessSizeMB = UnlockAllSettings?.MaxProcessSizeMB ?? 0;
 
@@ -322,118 +375,189 @@ public partial class MenuViewModel
                     monitorTask = MonitorSteamWebHelpersAsync(maxProcessSizeMB, monitorCts.Token);
                 }
 
-                foreach (var game in gamesToUnlock)
+                var pending = gamesToUnlock.ToList();
+
+                // cached schemas first so the prefetcher has time to fetch the missing ones;
+                // TryClaim inside the predicates ensures a game is never run by two helpers at once
+                SteamApp ClaimNextGame()
                 {
-                    const int MAX_RETRIES = 1;
-                    var attempts = 0;
-                    var succeeded = false;
+                    var next = pending.FirstOrDefault(g => SchemaPrefetcher.IsCached((uint) g.Id) && SchemaPrefetcher.TryClaim((uint) g.Id))
+                               ?? pending.FirstOrDefault(g => SchemaPrefetcher.TryClaim((uint) g.Id));
+                    if (next != null) pending.Remove(next);
+                    return next;
+                }
 
-                    while (attempts <= MAX_RETRIES)
+                async Task RunWorkerAsync()
+                {
+                    while (!aborted && pending.Count > 0)
                     {
-                        attempts++;
-                        var shouldRetry = false;
-
-                        try
+                        var game = ClaimNextGame();
+                        if (game == null)
                         {
-                            // Spawn a lightweight helper process to unlock this single game.
-                            var proc = SAM.Core.SAMHelper.UnlockAll((uint)game.Id);
+                            // the remaining games are being prefetched right now
+                            await Task.Delay(100);
+                            continue;
+                        }
 
-                            if (proc == null)
+                        const int MAX_RETRIES = 1;
+                        var attempts = 0;
+                        var succeeded = false;
+
+                        while (attempts <= MAX_RETRIES)
+                        {
+                            attempts++;
+                            var shouldRetry = false;
+                            var attemptWatch = Stopwatch.StartNew();
+                            long spawnMs = 0, helperMs = 0, steamWaitMs = 0;
+                            var exitCode = -1;
+                            string helperOutput = null;
+
+                            try
                             {
-                                log.Error($"Failed to start helper for game {game.Id} ({game.Name})");
-                                break;
-                            }
+                                // Spawn a lightweight helper process to unlock this single game.
+                                var proc = SAM.Core.SAMHelper.UnlockAll((uint)game.Id, relock ? "--relock" : string.Empty);
+                                spawnMs = attemptWatch.ElapsedMilliseconds;
 
-                            // wait asynchronously up to 60s for helper to finish so UI thread isn't blocked
-                            var waitTask = proc.WaitForExitAsync();
-                            var delayTask = Task.Delay(TimeSpan.FromSeconds(60));
-
-                            var completed = await Task.WhenAny(waitTask, delayTask);
-
-                            if (completed != waitTask)
-                            {
-                                log.Error($"Helper timed out for game {game.Id} (pid {proc.Id})");
-                                try { proc.Kill(); } catch { }
-                                consecutiveSteamFailures = 0;
-                                break;
-                            }
-
-                            // ensure process exit code checked after completion
-                            if (!proc.HasExited || proc.ExitCode != 0)
-                            {
-                                log.Error($"Helper failed for game {game.Id} (exit {proc.ExitCode})");
-
-                                // Exit codes 2 (stats schema not found) and 99 indicate Steam client issues
-                                if (proc.ExitCode == 2 || proc.ExitCode == 99)
+                                if (proc == null)
                                 {
-                                    consecutiveSteamFailures++;
+                                    log.Error($"Failed to start helper for game {game.Id} ({game.Name})");
+                                    break;
+                                }
 
-                                    if (consecutiveSteamFailures >= STEAM_FAIL_THRESHOLD && attempts <= MAX_RETRIES)
+                                var outputTask = proc.StandardOutput.ReadToEndAsync();
+
+                                // healthy helpers take <1s (~16s worst case for a fresh schema download); steamclient's
+                                // intermittent pipe assert can hang one for much longer, so give up sooner and retry once
+                                var waitTask = proc.WaitForExitAsync();
+                                var delayTask = Task.Delay(TimeSpan.FromSeconds(25));
+
+                                var completed = await Task.WhenAny(waitTask, delayTask);
+                                helperMs = attemptWatch.ElapsedMilliseconds - spawnMs;
+
+                                if (completed == waitTask)
+                                {
+                                    exitCode = proc.ExitCode;
+                                    helperOutput = await outputTask;
+                                }
+
+                                if (completed != waitTask)
+                                {
+                                    log.Error($"Helper timed out for game {game.Id} (pid {proc.Id})");
+                                    try { proc.Kill(); } catch { }
+                                    consecutiveSteamFailures = 0;
+                                    if (attempts <= MAX_RETRIES) continue;
+                                    break;
+                                }
+
+                                // ensure process exit code checked after completion
+                                if (!proc.HasExited || proc.ExitCode != 0)
+                                {
+                                    log.Error($"Helper failed for game {game.Id} (exit {proc.ExitCode})");
+
+                                    // 99 (unhandled helper error) and 6 (Steam didn't answer) indicate Steam client issues
+                                    if (proc.ExitCode == 99 || proc.ExitCode == 6)
                                     {
-                                        log.Warn($"{consecutiveSteamFailures} consecutive games failed with exit code {proc.ExitCode}. Possible Steam client connection issue. Waiting for Steam...");
+                                        consecutiveSteamFailures++;
 
-                                        var waitedSuccessfully = await WaitForSteamClientAsync(STEAM_POLL_INTERVAL_MS, MAX_STEAM_WAIT_MINUTES, STEAM_RECONNECT_SETTLE_MS);
-
-                                        if (!waitedSuccessfully)
+                                        if (consecutiveSteamFailures >= STEAM_FAIL_THRESHOLD && attempts <= MAX_RETRIES)
                                         {
-                                            log.Error($"Steam client did not reconnect within {MAX_STEAM_WAIT_MINUTES} minutes. Aborting Unlock All.");
-                                            MessageBox.Show(
-                                                $"Steam client connection lost and did not recover within {MAX_STEAM_WAIT_MINUTES} minutes.\n\n" +
-                                                "The operation has been stopped. Progress was saved — you can resume later.",
-                                                "Steam Connection Lost", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                            return;
-                                        }
+                                            log.Warn($"{consecutiveSteamFailures} consecutive games failed with exit code {proc.ExitCode}. Possible Steam client connection issue. Waiting for Steam...");
 
-                                        log.Info("Steam client reconnected. Retrying current game...");
+                                            var waitStart = attemptWatch.ElapsedMilliseconds;
+                                            var waitedSuccessfully = await WaitForSteamClientAsync(STEAM_POLL_INTERVAL_MS, MAX_STEAM_WAIT_MINUTES, STEAM_RECONNECT_SETTLE_MS);
+                                            steamWaitMs = attemptWatch.ElapsedMilliseconds - waitStart;
+
+                                            if (!waitedSuccessfully)
+                                            {
+                                                if (!aborted)
+                                                {
+                                                    aborted = true;
+                                                    log.Error($"Steam client did not reconnect within {MAX_STEAM_WAIT_MINUTES} minutes. Aborting Unlock All.");
+                                                    MessageBox.Show(
+                                                        $"Steam client connection lost and did not recover within {MAX_STEAM_WAIT_MINUTES} minutes.\n\n" +
+                                                        "The operation has been stopped. Progress was saved — you can resume later.",
+                                                        "Steam Connection Lost", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                                }
+                                                break;
+                                            }
+
+                                            log.Info("Steam client reconnected. Retrying current game...");
+                                            consecutiveSteamFailures = 0;
+                                            shouldRetry = true;
+                                        }
+                                    }
+                                    else if (proc.ExitCode == 2 && attempts <= MAX_RETRIES)
+                                    {
+                                        // one refusal could be a server hiccup; only a repeated refusal marks the game as unlockable-never
                                         consecutiveSteamFailures = 0;
                                         shouldRetry = true;
                                     }
-                                }
-                                else
-                                {
-                                    consecutiveSteamFailures = 0;
+                                    else
+                                    {
+                                        consecutiveSteamFailures = 0;
+
+                                        if ((proc.ExitCode == 2 || proc.ExitCode == 5) && skipFilePath != null)
+                                        {
+                                            var reason = proc.ExitCode == 2 ? "Steam refused stats (no license / not owned?)" : "all achievements protected";
+                                            File.AppendAllText(skipFilePath, $"{game.Id}\t{reason}\t{game.Name}{Environment.NewLine}");
+                                            log.Warn($"Game {game.Id} ({game.Name}) can't be unlocked: {reason}. It will be ignored from now on.");
+                                        }
+                                    }
+
+                                    if (!shouldRetry) break;
+                                    continue;
                                 }
 
-                                if (!shouldRetry) break;
-                                continue;
+                                // Success
+                                succeeded = true;
+                                consecutiveSteamFailures = 0;
+                                break;
                             }
-
-                            // Success
-                            succeeded = true;
-                            consecutiveSteamFailures = 0;
-                            break;
+                            catch (Exception ex)
+                            {
+                                log.Error($"Failed to unlock game {game.Id} ({game.Name})", ex);
+                                consecutiveSteamFailures = 0;
+                                break;
+                            }
+                            finally
+                            {
+                                SchemaPrefetcher.RecordTiming(relock ? "relock" : "unlock", (uint) game.Id, game.Name, attempts, exitCode, spawnMs, helperMs, steamWaitMs, helperOutput);
+                            }
                         }
-                        catch (Exception ex)
+
+                        SchemaPrefetcher.Release((uint) game.Id);
+                        if (aborted) return;
+
+                        if (succeeded)
                         {
-                            log.Error($"Failed to unlock game {game.Id} ({game.Name})", ex);
-                            consecutiveSteamFailures = 0;
-                            break;
+                            if (!relock)
+                            {
+                                // sync on purpose: workers resume on the UI thread, so appends can't overlap
+                                File.AppendAllText(saveFilePath, game.Id.ToString() + Environment.NewLine);
+                                unlockedGameIds.Add(game.Id.ToString());
+                            }
+                            log.Info($"{verb}ed achievements for game {game.Id} ({game.Name})");
                         }
-                    }
 
-                    if (succeeded)
-                    {
-                        await File.AppendAllTextAsync(saveFilePath, game.Id.ToString() + Environment.NewLine);
-                        unlockedGameIds.Add(game.Id.ToString());
-                        log.Info($"Unlocked achievements for game {game.Id} ({game.Name})");
-                    }
+                        processedCount++;
+                        UnlockProgressPercent = (double)processedCount / totalToProcess * 100.0;
 
-                    processedCount++;
-                    UnlockProgressPercent = (double)processedCount / totalToProcess * 100.0;
-
-                    var elapsed = DateTime.UtcNow - unlockStartTime;
-                    var remaining = totalToProcess - processedCount;
-                    if (processedCount > 0 && remaining > 0)
-                    {
-                        var avgPerGame = elapsed / processedCount;
-                        var eta = avgPerGame * remaining;
-                        UnlockProgressText = $"{UnlockProgressPercent:F0}% — ETA: {(int)eta.TotalHours:D2}h {eta.Minutes:D2}m {eta.Seconds:D2}.{eta.Milliseconds:D3}s";
-                    }
-                    else if (remaining == 0)
-                    {
-                        UnlockProgressText = "100% — Done";
+                        var elapsed = DateTime.UtcNow - unlockStartTime;
+                        var remaining = totalToProcess - processedCount;
+                        if (processedCount > 0 && remaining > 0)
+                        {
+                            var avgPerGame = elapsed / processedCount;
+                            var eta = avgPerGame * remaining;
+                            UnlockProgressText = $"{UnlockProgressPercent:F0}% — ETA: {(int)eta.TotalHours:D2}h {eta.Minutes:D2}m {eta.Seconds:D2}.{eta.Milliseconds:D3}s";
+                        }
+                        else if (remaining == 0)
+                        {
+                            UnlockProgressText = "100% — Done";
+                        }
                     }
                 }
+
+                await Task.WhenAll(Enumerable.Range(0, UNLOCK_CONCURRENCY).Select(_ => RunWorkerAsync()));
             }
             finally
             {
@@ -454,15 +578,17 @@ public partial class MenuViewModel
                 catch { }
             }
 
-            MessageBox.Show($"Unlock All completed! Processed {gamesToUnlock.Count} games.", 
+            if (aborted) return;
+
+            MessageBox.Show($"{verb} All completed! Processed {gamesToUnlock.Count} games.",
                 "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            log.Info("Unlock All operation completed successfully.");
+            log.Info($"{verb} All operation completed successfully.");
         }
         catch (Exception ex)
         {
             IsUnlocking = false;
-            var message = $"An error occurred during Unlock All operation. {ex.Message}";
+            var message = $"An error occurred during {verb} All operation. {ex.Message}";
             log.Error(message, ex);
             MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -561,14 +687,6 @@ public partial class MenuViewModel
         return false;
     }
 
-    // Command availability: disable until library is fully loaded
-    public bool CanStartUnlockAll()
-    {
-        var lib = SteamLibraryManager.DefaultLibrary;
-        if (lib == null) return false;
-        return !lib.IsLoading && lib.Items != null && lib.Items.Count > 0;
-    }
-
     [GenerateCommand]
     public void ClearSaveFile()
     {
@@ -588,14 +706,17 @@ public partial class MenuViewModel
                 return;
             }
 
-            if (!File.Exists(saveFilePath))
+            var skipFilePath = SteamHelper.GetSkipFilePath(steamId);
+
+            if (!File.Exists(saveFilePath) && (skipFilePath == null || !File.Exists(skipFilePath)))
             {
                 MessageBox.Show("Save file does not exist.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             var result = MessageBox.Show(
-                "This will delete the save file and allow you to re-unlock all games.\n\nAre you sure?",
+                "This will delete the save file and allow you to re-unlock all games.\n" +
+                "Games marked as impossible to unlock will be checked again too.\n\nAre you sure?",
                 "Confirm Clear Save File",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -606,6 +727,7 @@ public partial class MenuViewModel
             }
 
             File.Delete(saveFilePath);
+            if (skipFilePath != null) File.Delete(skipFilePath);
             log.Info($"Deleted save file: {saveFilePath}");
 
             MessageBox.Show("Save file cleared successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -620,5 +742,53 @@ public partial class MenuViewModel
 
     private void OnHomeViewChanged()
     {
+    }
+
+    // cache missing stats schemas in the background so Unlock All starts with everything on disk
+    private void StartSchemaPrefetch()
+    {
+        try
+        {
+            var items = SteamLibraryManager.DefaultLibrary?.Items;
+            if (items == null || items.Count == 0) return;
+
+            var skipped = SteamHelper.LoadSkippedGames(SteamHelper.GetCurrentSteamId());
+            SchemaPrefetcher.Start(items.Select(g => (uint) g.Id).Where(id => !skipped.Contains(id)).ToList());
+        }
+        catch (Exception ex)
+        {
+            log.Warn("Failed to start stats schema prefetch.", ex);
+        }
+    }
+
+    private void UpdateCanStartUnlockAll()
+    {
+        var lib = SteamLibraryManager.DefaultLibrary;
+        CanStartUnlockAll = lib != null && !lib.IsLoading && lib.Items != null && lib.Items.Count > 0;
+    }
+
+    private void ShowLoadingCompletedMessage()
+    {
+        try
+        {
+            // Cancel any pending message clear
+            _loadingMessageCts?.Cancel();
+            _loadingMessageCts = new CancellationTokenSource();
+
+            LoadingCompletedMessage = "Loaded.";
+
+            // Clear the message after 3 seconds
+            _ = Task.Delay(3000, _loadingMessageCts.Token).ContinueWith(_ =>
+            {
+                if (!_loadingMessageCts.Token.IsCancellationRequested)
+                {
+                    LoadingCompletedMessage = string.Empty;
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+        catch (Exception ex)
+        {
+            log.Error("Error showing loading completed message", ex);
+        }
     }
 }

@@ -9,6 +9,7 @@
                  xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
                  xmlns:behaviors="clr-namespace:SAM.Behaviors"
                  xmlns:sam="clr-namespace:SAM"
+                 xmlns:gif="http://wpfanimatedgif.codeplex.com"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
                  ExtendsContentIntoTitleBar="True" WindowCornerPreference="DoNotRound"
@@ -32,15 +33,51 @@
 
     <Grid>
         <DockPanel LastChildFill="True">
-            <ui:TitleBar DockPanel.Dock="Top" Title="{Binding Title, Mode=OneWay}"
+            <ui:TitleBar DockPanel.Dock="Top"
                          CloseWindowByDoubleClickOnIcon="True"
                          FontSize="13">
+                <ui:TitleBar.Style>
+                    <Style TargetType="ui:TitleBar" BasedOn="{StaticResource {x:Type ui:TitleBar}}">
+                        <!-- library mode: the connected account (in Header) replaces the app logo and title.
+                             empty, not null: the template collapses the whole title grid (Header included) when Icon and Title are both null -->
+                        <Setter Property="Title" Value="" />
+                        <Style.Triggers>
+                            <!-- manager mode has no account: keep the original logo and title -->
+                            <DataTrigger Binding="{Binding User}" Value="{x:Null}">
+                                <Setter Property="Title" Value="{Binding Title, Mode=OneWay}" />
+                                <Setter Property="Icon">
+                                    <Setter.Value>
+                                        <ui:ImageIcon Source="/SAM.png" />
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ui:TitleBar.Style>
                 <ui:TitleBar.Header>
-                    <views:MenuView DataContext="{Binding MenuVm}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- spacing and text opacity copied from the title bar template's icon and title (WindowStyles.xaml) -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="-5,0,0,0">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding User}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <Image gif:ImageBehavior.AnimatedSource="{Binding User.Avatar, Mode=OneWay}"
+                                   Width="28" Height="28" Stretch="UniformToFill" Margin="0,0,14,0" />
+                            <TextBlock Text="{Binding User.PersonaAndId, Mode=OneWay}" VerticalAlignment="Center" Opacity="0.7" />
+                        </StackPanel>
+                        <views:MenuView Grid.Column="1" DataContext="{Binding MenuVm}" />
+                    </Grid>
                 </ui:TitleBar.Header>
-                <ui:TitleBar.Icon>
-                    <ui:ImageIcon Source="/SAM.png" />
-                </ui:TitleBar.Icon>
             </ui:TitleBar>
             <ContentControl Content="{Binding CurrentVm}" />
         </DockPanel>

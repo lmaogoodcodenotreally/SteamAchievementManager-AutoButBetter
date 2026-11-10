@@ -18,21 +18,63 @@ public partial class SteamUser
 {
     private const string PROFILE_URL_FORMAT = @"https://steamcommunity.com/profiles/{0}";
     private const string PROFILE_XML_URL_FORMAT = @"https://steamcommunity.com/profiles/{0}?xml=1";
+    // public (no API key); the profile XML only lists the static avatar, not an equipped animated one
+    private const string EQUIPPED_ITEMS_URL_FORMAT = @"https://api.steampowered.com/IPlayerService/GetProfileItemsEquipped/v1/?steamid={0}";
+    private const string COMMUNITY_IMAGES_URL = @"https://cdn.akamai.steamstatic.com/steamcommunity/public/images/";
 
     private static readonly ILog log = LogManager.GetLogger(nameof(SteamUser));
     private readonly Client _client;
-    [GenerateProperty] private ulong _steamId64;
-    [GenerateProperty] private string _steamId;
+    [GenerateProperty(OnChangedMethod = nameof(OnIdentityChanged))]
+    private ulong _steamId64;
+
+    [GenerateProperty(OnChangedMethod = nameof(OnIdentityChanged))]
+    private string _steamId = string.Empty;
+
     [GenerateProperty] private string _profileUrl;
     [GenerateProperty] private string _avatarIcon;
     [GenerateProperty] private string _avatarMedium;
     [GenerateProperty] private string _avatarFull;
     [GenerateProperty] private ImageSource _avatar;
+    // the profile is loaded by the library's first Refresh(); loading it here too ran two fetches in parallel
     public SteamUser(Client client)
     {
         _client = client;
+    }
 
-        _ = RefreshProfile();
+    private void OnIdentityChanged() => RaisePropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(PersonaAndId)));
+
+    // returns null when no animated avatar is equipped (or it can't be fetched), so the caller falls back to the static one
+    private async Task<ImageSource> LoadAnimatedAvatarAsync(HttpClient http)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(await http.GetStringAsync(string.Format(EQUIPPED_ITEMS_URL_FORMAT, SteamId64)));
+            if (!doc.RootElement.GetProperty("response").TryGetProperty("animated_avatar", out var animated)
+                || !animated.TryGetProperty("image_small", out var image)
+                || string.IsNullOrEmpty(image.GetString()))
+            {
+                return null;
+            }
+
+            var url = COMMUNITY_IMAGES_URL + image.GetString();
+
+            // not disposed on purpose: WpfAnimatedGif re-reads StreamSource to decode the frames
+            var stream = new MemoryStream(await http.GetByteArrayAsync(url));
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.StreamSource = stream;
+            bmp.EndInit();
+            bmp.Freeze();
+
+            log.Info($"Animated avatar loaded from {url}");
+            return bmp;
+        }
+        catch (Exception ex)
+        {
+            log.Warn($"Failed to load animated avatar, using the static one. {ex.Message}", ex);
+            return null;
+        }
     }
 
     public async Task Refresh()
@@ -47,6 +89,26 @@ public partial class SteamUser
         : SteamId64 == 0 ? string.Empty : SteamId64.ToString();
 
     private async Task RefreshProfile()
+    {
+        const int MAX_RETRIES = 3;
+        const int RETRY_DELAY_MS = 2000;
+
+        for (int attempt = 0; attempt < MAX_RETRIES; attempt++)
+        {
+            try
+            {
+                await RefreshProfileAttempt();
+                return;
+            }
+            catch (Exception ex) when (attempt < MAX_RETRIES - 1)
+            {
+                log.Warn($"RefreshProfile attempt {attempt + 1} failed: {ex.Message}. Retrying in {RETRY_DELAY_MS}ms...");
+                await Task.Delay(RETRY_DELAY_MS);
+            }
+        }
+    }
+
+    private async Task RefreshProfileAttempt()
     {
             log.Info("RefreshProfile method entered");
             try { System.IO.File.AppendAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "SAM_instrument.log"), $"{DateTime.UtcNow:O} SteamUser.RefreshProfile START\n"); } catch { }
@@ -141,10 +203,11 @@ public partial class SteamUser
                 try { System.IO.File.AppendAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "SAM_instrument.log"), $"{DateTime.UtcNow:O} SteamUser.RefreshProfile Starting avatar loading\n"); } catch { }
 
                 var candidates = new[] { AvatarFull, AvatarMedium, AvatarIcon };
-                ImageSource result = null;
                 using var http = new HttpClient();
+                var result = await LoadAnimatedAvatarAsync(http);
                 foreach (var url in candidates)
                 {
+                    if (result != null) break;
                     if (string.IsNullOrEmpty(url)) continue;
                     try
                     {

@@ -27,6 +27,20 @@ public static class SteamHelper
     {
         try
         {
+            // ActiveUser (32-bit account id) is the account Steam is logged into right now
+            var accountId = SAM.Core.SteamUserManager.GetActiveUser();
+            if (accountId != 0)
+            {
+                return (76561197960265728UL + (uint) accountId).ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            log.Warn("Could not read Steam ActiveUser from registry, falling back to loginusers.vdf.", ex);
+        }
+
+        try
+        {
             var installPath = GetSteamInstallPath();
             if (string.IsNullOrEmpty(installPath))
             {
@@ -44,7 +58,8 @@ public static class SteamHelper
             }
 
             var contents = File.ReadAllText(filePath);
-            var regex = new Regex(@"""(\d{17})""\s*\{[^}]*""MostRecent""\s*""1""");
+            // older Steam writes "MostRecent" "1"; current Steam dropped it, "AutoLogin" "1" marks the last account
+            var regex = new Regex(@"""(\d{17})""\s*\{[^}]*""(MostRecent|AutoLogin)""\s*""1""", RegexOptions.IgnoreCase);
             var match = regex.Match(contents);
 
             if (match.Success)
@@ -99,5 +114,26 @@ public static class SteamHelper
         }
 
         return Path.Combine(saveDirectory, "save.unlocks");
+    }
+
+    // games that can never be unlocked on this account (Steam refuses stats, or all achievements protected); one "appid<TAB>reason" per line
+    public static string GetSkipFilePath(string steamId)
+    {
+        var saveDirectory = GetSaveDirectory(steamId);
+        return string.IsNullOrEmpty(saveDirectory) ? null : Path.Combine(saveDirectory, "save.skipped");
+    }
+
+    public static System.Collections.Generic.HashSet<uint> LoadSkippedGames(string steamId)
+    {
+        var skipped = new System.Collections.Generic.HashSet<uint>();
+        var path = GetSkipFilePath(steamId);
+        if (path == null || !File.Exists(path)) return skipped;
+
+        foreach (var line in File.ReadAllLines(path))
+        {
+            if (uint.TryParse(line.Split('\t')[0], out var appId)) skipped.Add(appId);
+        }
+
+        return skipped;
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Xml;
 using log4net;
 using SAM.Core;
@@ -111,7 +112,27 @@ public class SteamLibraryManager
 
             var cacheKey = CacheKeys.Games;
 
-            if (!CacheManager.TryGetTextFile(cacheKey, out var gamesXml))
+            var cachePath = cacheKey.GetFullPath();
+
+            if (!CacheManager.TryGetTextFile(cacheKey, out var gamesXml) && CacheManager.StorageManager.FileExists(cachePath))
+            {
+                // gib.me download takes ~30s, so start with the stale list and refresh it for the next launch
+                gamesXml = CacheManager.StorageManager.GetTextFile(cachePath);
+
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        CacheManager.CacheText(cacheKey, await client.GetStringAsync(SAM_GAME_LIST_URL));
+                    }
+                    catch (Exception e)
+                    {
+                        log.Warn($"Background refresh of the supported games list failed. {e.Message}", e);
+                    }
+                });
+            }
+
+            if (gamesXml == null)
             {
                 var response = AsyncHelper.RunSync(() => client.GetAsync(SAM_GAME_LIST_URL));
                 gamesXml = AsyncHelper.RunSync(() => response.Content.ReadAsStringAsync());

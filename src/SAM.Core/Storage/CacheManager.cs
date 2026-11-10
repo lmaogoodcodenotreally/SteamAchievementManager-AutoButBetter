@@ -436,8 +436,9 @@ public static class CacheManager
             return false;
         }
 
-        var dateCreated = StorageManager.GetDateCreated(fileName) ?? DateTime.Now;
-        var expireDate = dateCreated.AddDays(key.DaysValid!.Value);
+        // modified, not created: overwriting a file on NTFS keeps its original creation time
+        var lastWritten = StorageManager.GetDateModified(fileName) ?? DateTime.Now;
+        var expireDate = lastWritten.AddDays(key.DaysValid!.Value);
         var isValid = DateTime.Now <= expireDate;
 
         return !isValid;

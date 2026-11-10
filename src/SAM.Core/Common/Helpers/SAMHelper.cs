@@ -71,7 +71,15 @@ namespace SAM.Core
             return proc;
         }
 
-        public static Process? UnlockAll(uint appId)
+        private static readonly object SpawnLock = new();
+
+        // serialized: the copy + stale-file cleanup below must not race another spawn (prefetch and unlock workers run concurrently)
+        public static Process? UnlockAll(uint appId, string helperArgs = "")
+        {
+            lock (SpawnLock) return StartHelper(appId, helperArgs);
+        }
+
+        private static Process? StartHelper(uint appId, string helperArgs)
         {
             if (appId == default) throw new ArgumentException($"App id {appId} is not valid.", nameof(appId));
 
@@ -181,8 +189,10 @@ namespace SAM.Core
 
                 var psi = new ProcessStartInfo(targetExe)
                 {
+                    Arguments = helperArgs,
                     CreateNoWindow = true,
                     UseShellExecute = false,
+                    RedirectStandardOutput = true, // helper prints its per-phase TIMING line here
                     WindowStyle = ProcessWindowStyle.Hidden,
                     WorkingDirectory = samDir
                 };

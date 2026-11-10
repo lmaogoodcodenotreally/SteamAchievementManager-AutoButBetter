@@ -17,6 +17,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.Win32Metadata" Version="63.0.31-preview" />
     <PackageReference Include="ValveKeyValue" Version="0.13.1.398" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>

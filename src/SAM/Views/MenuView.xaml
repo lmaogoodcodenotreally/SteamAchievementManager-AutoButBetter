@@ -33,7 +33,7 @@
             <ui:MenuItem Header="Unlock All" Icon="{ui:SymbolIcon LockClosed24}"
                          Visibility="{Binding IsLibrary, Converter={dxmvvm:BooleanToVisibilityConverter}}">
                 <ui:MenuItem Header="Start Unlock All Games" Icon="{ui:SymbolIcon PlayCircle24}" Command="{Binding StartUnlockAllCommand}"
-                             IsEnabled="{Binding HomeVm.CurrentVm.Library.IsLoading, Converter={StaticResource BooleanNegationConverter}}" />
+                             IsEnabled="{Binding CanStartUnlockAll, Mode=OneWay}" />
                 <Separator />
                 <controls:MenuHeaderItem Header="Resume" />
                 <ui:MenuItem Header="Clear Save File" Icon="{ui:SymbolIcon Delete24}" Command="{Binding ClearSaveFileCommand}" />
@@ -129,6 +129,9 @@
             <ui:MenuItem Header="Tools" Icon="{ui:SymbolIcon Toolbox24}">
                 <controls:MenuHeaderItem Header="Steam" IsEnabled="False" />
                 <ui:MenuItem Header="Console" Command="{Binding OpenSteamConsoleCommand}" />
+                <Separator />
+                <ui:MenuItem Header="Relock All Games" Icon="{ui:SymbolIcon LockOpen24}" Command="{Binding RelockAllCommand}"
+                             IsEnabled="{Binding CanStartUnlockAll, Mode=OneWay}" />
             </ui:MenuItem>
             <ui:MenuItem Header="Help" Icon="{ui:SymbolIcon Question24}">
                 <ui:MenuItem Header="Reset to Default" Icon="{ui:SymbolIcon ArrowReset24}" Command="{Binding ResetAllSettingsCommand}" />

@@ -9,7 +9,7 @@ public static class CacheKeys
     public static ICacheKey UserTheme => new CacheKey(@"default", CacheKeyType.Theme);
     public static ICacheKey UserLibrary => new CacheKey(@"user_apps.json", CacheKeyType.Default);
     public static ICacheKey UserSettings => new CacheKey(@"user", CacheKeyType.Settings);
-    public static ICacheKey Games => new CacheKey(@"games.xml", CacheKeyType.Data, GetGamesXmlExpiration());
+    public static ICacheKey Games => new CacheKey(@"games.xml", CacheKeyType.Data, DEFAULT_GAMES_XML_EXPIRATION);
 
     public static ICacheKey CreateAppCacheKey(uint appid)
     {
@@ -27,16 +27,6 @@ public static class CacheKeys
     {
         var key = new CacheKey(imageFileName, appid, CacheKeyType.App, CacheKeySubType.Image);
         return key;
-    }
-
-    private static uint GetGamesXmlExpiration()
-    {
-        // TODO: add cache expiration override to all expiring cached items
-        if (NetworkHelper.IsOnline())
-        {
-            return DEFAULT_GAMES_XML_EXPIRATION;
-        }
-        return ushort.MaxValue;
     }
 
 }
