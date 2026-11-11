@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using log4net;
+using Microsoft.Win32;
 using SAM.API;
 using SAM.Core;
 
@@ -16,6 +18,8 @@ public static class SteamClientManager
     private static string _steamInstallPath;
     private static string _cachePath;
     private static string _gridCachePath;
+    private static int _steamPid;
+    private static int _accountId;
 
     public static uint AppId { get; private set; }
     public static string CurrentLanguage { get; private set; }
@@ -73,6 +77,7 @@ public static class SteamClientManager
 
             AppId = appId;
             CurrentLanguage = Default.SteamApps008.GetCurrentGameLanguage();
+            (_steamPid, _accountId) = ReadSteamSession();
 
             _isInitialized = true;
         }
@@ -83,5 +88,37 @@ public static class SteamClientManager
 
             throw new SAMInitializationException(message, e);
         }
+    }
+
+    /// <summary>
+    /// True when Steam restarted or switched accounts since <see cref="Init"/> (switching accounts restarts Steam):
+    /// the pipe opened in Init is then dead and any call through it kills SAM natively, uncatchable.
+    /// Null when Steam is not running or not logged in yet.
+    /// </summary>
+    public static bool? HasSteamSessionChanged()
+    {
+        var (pid, accountId) = ReadSteamSession();
+        if (pid == 0) return null;
+
+        try
+        {
+            // the registry keeps the last pid after Steam exits
+            Process.GetProcessById(pid).Dispose();
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+
+        // unchanged first: offline mode has ActiveUser 0 from the start
+        if (pid == _steamPid && accountId == _accountId) return false;
+
+        return accountId == 0 ? null : true;
+    }
+
+    private static (int pid, int accountId) ReadSteamSession()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam\ActiveProcess");
+        return (key?.GetValue("pid") as int? ?? 0, key?.GetValue("ActiveUser") as int? ?? 0);
     }
 }

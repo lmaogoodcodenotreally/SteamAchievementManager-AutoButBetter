@@ -106,6 +106,20 @@ public partial class LibraryViewModel
         {
             if (_settings == null) return;
 
+            switch (SteamClientManager.HasSteamSessionChanged())
+            {
+                case null:
+                    System.Windows.MessageBox.Show("Steam is restarting or not logged in yet. Press Refresh again once Steam is logged in.",
+                        "Steam not ready", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    return;
+                case true:
+                    // everything (Steam connection, owned games, save folder, grid images) is tied to the startup session: start over on the new one
+                    log.Info("Steam restarted or switched accounts, restarting SAM to load the new session.");
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Environment.ProcessPath!) { WorkingDirectory = Environment.CurrentDirectory });
+                    System.Windows.Application.Current.Shutdown();
+                    return;
+            }
+
             log.Info($"Library refresh started (force: {force})");
 
             _loading = true;
