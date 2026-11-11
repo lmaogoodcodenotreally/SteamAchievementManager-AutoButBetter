@@ -2,7 +2,7 @@
 - This fork is almost mainly focused on Bulk/Unlock All quick operation on huge steam libraries, its only better to SAM/some other SAM fork in this regard.
 - For single precise edits or more casual experience or less focus around Unlock All feature you may want to use something like [SAMRewritten](https://github.com/PaulCombal/SamRewritten) or some other fork.
 
-## Enough yapping I just want to download
+## Just want to download?
 [Click here to download] 
 
 ## Credits+Preview
