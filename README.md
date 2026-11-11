@@ -3,7 +3,7 @@
 - For single precise edits or more casual experience or less focus around Unlock All feature you may want to use something like [SAMRewritten](https://github.com/PaulCombal/SamRewritten) or some other fork.
 
 ## Just want to download?
-[Click here to download] 
+[Click here to download](https://github.com/lmaogoodcodenotreally/SteamAchievementManager-AutoButBetter/releases/latest/download/SAMAAB.zip)
 
 ## Credits+Preview
 > now using https://github.com/syntax-tm/SteamAchievementManager as base for fork, all credits goes to syntax-tm and https://github.com/gibbed/SteamAchievementManager
